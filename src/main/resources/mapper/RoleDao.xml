@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oamanage.dao.RoleDao">
+	
+	<!-- 查询全部角色 -->
+	<select id="queryAllRoles" resultType="Role">
+		select role_id,role_name from role;
+	</select>
+	
+	<!-- 添加角色 -->
+	<insert id="addRole" parameterType="String">
+		insert into role(role_name) values(#{roleName});
+	</insert>
+</mapper>

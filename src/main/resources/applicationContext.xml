@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+	
+	<context:property-placeholder location="classpath:db.properties"/>
+	<context:component-scan base-package="com.oamanage"></context:component-scan>
+	
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		<property name="user" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+		<property name="typeAliasesPackage" value="com.oamanage.po"></property>
+		<property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+	</bean>
+	
+	<!-- 自动扫描DAO接口并注入到spring中 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+		<property name="basePackage" value="com.oamanage.dao"></property>
+	</bean>
+	
+	
+	
+	<!-- 配置事务管理 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- 加载Activiti -->
+	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+		<property name="processEngineConfiguration" ref="processEngineConfiguration"></property>
+	</bean>
+	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="transactionManager" ref="transactionManager"></property>
+		<property name="databaseSchemaUpdate" value="true"></property>
+		<property name="jobExecutorActivate" value="false"></property>
+		<property name="createDiagramOnDeploy" value="true"></property>
+		<property name="activityFontName" value="宋体"></property>
+		<property name="labelFontName" value="宋体"></property>
+	</bean>
+	
+	
+	<!-- Activiti接口 -->
+	<bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService"/>
+	<bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService"/>
+	<bean id="taskService" factory-bean="processEngine" factory-method="getTaskService"/>
+	<bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService"/>
+	<bean id="managementService" factory-bean="processEngine" factory-method="getManagementService"></bean>
+	
+	<!-- 配置事务 -->
+	<tx:advice transaction-manager="transactionManager" id="tx">
+		<tx:attributes>
+			<tx:method name="agreeApply" propagation="REQUIRED" isolation="REPEATABLE_READ" rollback-for="Exception" />
+			<tx:method name="rejectApply" propagation="REQUIRED" isolation="REPEATABLE_READ" rollback-for="Exception" />
+		</tx:attributes>
+	</tx:advice>
+	
+	 
+	<aop:config>
+		<aop:pointcut expression="execution(public * com.oamanage.service.LeaveService.*(..))" id="pointcut"/>
+		<aop:advisor advice-ref="tx" pointcut-ref="pointcut"/>
+	</aop:config>
+	
+	
+</beans>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oamanage.dao.LoginDao">
+	
+	<resultMap type="com.oamanage.po.Staff" id="staffRoleMessage">
+		<id property="userId" column="user_id"/>
+		<result property="userName" column="user_name"/>
+		<result property="loginName" column="login_name"/>
+		<result property="loginPassword" column="login_password"/>
+		<result property="phone" column="phone"/>
+		<result property="sex" column="sex"/>
+		<result property="email" column="email"/>
+		<collection property="roles" ofType="com.oamanage.po.Role">
+			<id property="roleId" column="role_id"/>
+			<result property="roleName" column="role_name"/>
+		</collection>
+	</resultMap>
+	
+	<!-- 登录验证
+	<select id="loginUser" parameterType="String" resultType="Staff">
+		select
+			login_name,login_password,user_name
+		from
+			staff_user
+		where
+			login_name = #{loginName}
+	</select>
+	 -->
+	
+	<!-- 登录验证 -->
+	<select id="loginUser" parameterType="String" resultMap="staffRoleMessage">
+		select
+			s.user_id,s.user_name,s.login_name,s.login_password,s.phone,s.sex,s.email,r.role_id,r.role_name
+		from
+			staff_user as s inner join staff_role as sr on s.user_id = sr.user_id inner join role as r on r.role_id = sr.role_id
+		where
+			s.login_name = #{loginName};
+	</select>
+	
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oamanage.dao.StaffDao">
+	
+	<!-- 
+	<resultMap type="com.oamanage.po.Staff" id="staffDeptMessage">
+		<id property="userId" column="user_id"/>
+		<result property="userName" column="user_name"/>
+		<result property="loginName" column="login_name"/>
+		<result property="loginPassword" column="login_password"/>
+		<result property="phone" column="phone"/>
+		<result property="sex" column="sex"/>
+		<result property="email" column="email"/>
+		<collection property="depts" ofType="com.oamanage.po.Dept">
+			<id property="deptId" column="dept_id"/>
+			<result property="deptName" column="dept_name"/>
+		</collection>
+	</resultMap>
+	 -->
+	
+	<!-- 查询人员总数 -->
+	<select id="queryStaffCount" resultType="int">
+		select count(0) from staff_user as s inner join staff_dept as sd on s.user_id = sd.user_id inner join dept as d on sd.dept_id = d.dept_id;
+	</select>
+	
+	<!-- 查询全部人员 -->
+	<select id="queryAllStaff" resultType="Staff">
+		select
+			s.user_id,s.user_name,s.phone,s.sex,s.email,d.dept_name
+		from
+			staff_user as s inner join staff_dept as sd on s.user_id = sd.user_id inner join dept as d on sd.dept_id = d.dept_id
+	</select>
+	
+	
+	<!-- 查询全部人员
+	<select id="queryAllStaff" resultType="Staff">
+		select
+			s.user_id,s.user_name,s.phone,s.sex,s.email,d.dept_name
+		from
+			staff_user as s inner join staff_dept as sd on s.user_id = sd.user_id inner join dept as d on sd.dept_id = d.dept_id
+	</select>
+	 -->
+	
+	<!-- 添加人员 -->
+	<insert id="addStaff" parameterType="com.oamanage.po.Staff">
+		insert into staff_user(user_name,login_name,login_password,phone,sex,email) values(#{userName},#{loginName},#{loginPassword},#{phone},#{sex},#{email});
+	</insert>
+	
+	
+	<!-- 添加人员部门关系 -->
+	<insert id="addStaffDept" parameterType="Staff">
+		insert into
+			staff_dept(user_id,dept_id)
+		select
+			su.user_id,d.dept_id from staff_user as su,dept as d
+		<where>
+			su.login_name = '${loginName}' and d.dept_name = '${deptName}'
+		</where>
+	</insert>
+	
+	<!-- 添加人员角色关系 -->
+	<insert id="addStaffRole" parameterType="Staff">
+		insert into
+			staff_role(user_id,role_id)
+		select
+			su.user_id,r.role_id from staff_user as su,role as r
+		<where>
+			su.login_name = #{loginName} and r.role_name = #{roleName}
+		</where>
+	</insert>
+	
+	<!-- 从人员表中删除人员 -->
+	<delete id="deleteStaff" parameterType="String">
+		delete from staff_user where user_id = #{userId};
+	</delete>
+	
+	<!-- 删除人员部门关系 -->
+	<delete id="deleteStaffDept" parameterType="String">
+		delete from staff_dept where user_id = #{userId};
+	</delete>
+	
+	<!-- 删除人员角色关系 -->
+	<delete id="deleteStaffRole" parameterType="String">
+		delete from staff_role where user_id = #{userId};
+	</delete>
+	
+	<!-- 修改密码 -->
+	<update id="modifyPwd" parameterType="String">
+		update staff_user set login_password = #{loginPassword} where user_name = #{userName};
+	</update>
+	
+	<cache flushInterval="60000" eviction="FIFO" size="512" readOnly="true"/>
+</mapper>

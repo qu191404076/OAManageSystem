@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oamanage.dao.DeptDao">
+
+	<!-- 添加部门 -->
+	<insert id="addDept" parameterType="String">
+		insert into dept(dept_name) values(#{deptName});
+	</insert>
+	
+	<!-- 查询全部部门 -->
+	<select id="queryAllDept" resultType="Dept">
+		select dept_id,dept_name from dept
+	</select>
+	
+	<!-- 查询部门总数 -->
+	<select id="queryDeptCount" resultType="int">
+		select count(0) from dept;
+	</select>
+</mapper>
